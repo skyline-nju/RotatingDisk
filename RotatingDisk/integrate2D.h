@@ -12,6 +12,10 @@ public:
   template <class TPar, class TDomain, class TRan>
   void update(TPar& p, const TDomain& dm, TRan& myran) const;
 
+  template<class TPar, class TDomain, class TRan, class TCellList>
+  void update_par_cellList(TPar& p, const TDomain& dm, TRan& myran, TCellList& cl) const;
+
+
 protected:
   double h_;
   double Dt_;
@@ -30,4 +34,16 @@ void BrownianDynamicsEM::update(TPar& p, const TDomain& dm, TRan& myran) const {
   //}
   p.force.x = 0.;
   p.force.y = 0.;
+}
+
+
+template<class TPar, class TDomain, class TRan, class TCellList>
+void BrownianDynamicsEM::update_par_cellList(TPar& p, const TDomain& dm,
+                                             TRan& myran, TCellList& cl) const {
+  auto ic_old = cl.get_ic(p);
+  update(p, dm, myran);
+  auto ic_new = cl.get_ic(p);
+  if (ic_old != ic_new) {
+    cl.update(p, ic_old, ic_new);
+  }
 }

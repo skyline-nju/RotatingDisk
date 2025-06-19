@@ -132,6 +132,7 @@
     <ClCompile Include="domain2D.cpp" />
     <ClCompile Include="exporter2D.cpp" />
     <ClCompile Include="gsd.c" />
+    <ClCompile Include="LJ_fluids.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,7 @@
     <ClInclude Include="force2D.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="integrate2D.h" />
+    <ClInclude Include="LJ_fluids.h" />
     <ClInclude Include="node.h" />
     <ClInclude Include="particle2D.h" />
     <ClInclude Include="rand.h" />
