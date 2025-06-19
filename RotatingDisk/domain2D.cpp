@@ -107,9 +107,9 @@ PeriodicDomain_2::PeriodicDomain_2(const Vec_2<double>& gl_l, const Vec_2<bool> 
 }
 #else
 PeriodicDomain_2::PeriodicDomain_2(const Vec_2<double>& gl_l,
-  const Grid_2& grid,
-  const Vec_2<int>& proc_size,
-  MPI_Comm group_comm)
+                                   const Grid_2& grid,
+                                   const Vec_2<int>& proc_size,
+                                   MPI_Comm group_comm)
   : Domain_2(gl_l, grid, proc_size, group_comm) {
   gl_half_l_.x = gl_l.x * 0.5;
   gl_half_l_.y = gl_l.y * 0.5;

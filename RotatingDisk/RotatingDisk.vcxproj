@@ -131,6 +131,7 @@
     <ClCompile Include="comn.cpp" />
     <ClCompile Include="domain2D.cpp" />
     <ClCompile Include="exporter2D.cpp" />
+    <ClCompile Include="force2D.cpp" />
     <ClCompile Include="gsd.c" />
     <ClCompile Include="LJ_fluids.cpp" />
     <ClCompile Include="main.cpp" />

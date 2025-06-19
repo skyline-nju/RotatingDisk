@@ -23,15 +23,14 @@ protected:
 
 template<class TPar, class TDomain, class TRan>
 void BrownianDynamicsEM::update(TPar& p, const TDomain& dm, TRan& myran) const {
+  dm.wall_force(p);
+
   p.pos += p.force * h_;
   p.pos.x += (myran.doub() - 0.5) * Dt_;
   p.pos.y += (myran.doub() - 0.5) * Dt_;
 
   dm.tangle(p.pos);
 
-  //if (p.pos.x >= dm.gl_l().x || p.pos.x < 0) {
-  //  std::cout << p.force << std::endl;
-  //}
   p.force.x = 0.;
   p.force.y = 0.;
 }

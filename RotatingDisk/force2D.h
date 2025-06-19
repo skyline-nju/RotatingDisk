@@ -116,3 +116,35 @@ void LJ_Force::operator()(TPar& p1, TPar& p2, const BdyCondi& bc) const {
   }
 }
 
+class LJ_hWalls {
+public:
+  LJ_hWalls(double Ly, bool flag_attractive_lower, bool flag_attractive_upper,
+            double eps, double sigma=1.0);
+
+  template <typename TPar>
+  void interact(TPar &p) const;
+
+  double get_LJ_force(double dx) const;
+
+private:
+  double Ly_;
+  double r_cut_[2];
+  double eps_6_;
+  double sigma_;
+  double half_sigma_;
+};
+
+template<typename TPar>
+void LJ_hWalls::interact(TPar& p) const {
+  double dy0 = p.pos.y + half_sigma_;
+
+  if (dy0 < r_cut_[0]) {
+    double fy = get_LJ_force(dy0);
+    p.force.y += fy;
+  } else {
+    double dy1 = Ly_ - p.pos.y + half_sigma_;
+    if (dy1 < r_cut_[1]) {
+      p.force.y -= get_LJ_force(dy1);
+    }
+  }
+}

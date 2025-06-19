@@ -9,10 +9,10 @@
 #include "particle2D.h"
 
 template <typename TRan, typename TPar>
-void ini_rand(std::vector<TPar>& p_arr, TRan& myran, int n_par, const Vec_2<double>& gl_l) {
+void ini_rand(std::vector<TPar>& p_arr, TRan& myran, int n_par, const Vec_2<double>& gl_l, const Vec_2<double>& origin) {
   p_arr.reserve(n_par);
   for (size_t i = 0; i < n_par; i++) {
-    p_arr.emplace_back(myran, gl_l, Vec_2<double>());
+    p_arr.emplace_back(myran, gl_l, origin);
   }
 }
 
@@ -22,7 +22,7 @@ void ini_rand_wo_overlap(std::vector<TPar>& p_arr, TRan& myran,
                          int n_par, const Vec_2<double>& gl_l,
                          double sigma = 1.) {
   typedef BiNode<BD_2> node_t;
-  ini_rand(p_arr, myran, n_par, gl_l);
+  ini_rand(p_arr, myran, n_par, gl_l, Vec_2<double>());
 
   double Dt = 0.;
   double k = 10;
@@ -56,6 +56,51 @@ void ini_rand_wo_overlap(std::vector<TPar>& p_arr, TRan& myran,
   }
 }
 
+
+
+template <typename TRan, typename TPar>
+void ini_rand_w_hWalls(std::vector<TPar>& p_arr, TRan& myran,
+                       int n_par, const Vec_2<double>& gl_l,
+                       double sigma = 1.) {
+  typedef BiNode<BD_2> node_t;
+
+  Vec_2<double> new_l = Vec_2<double>(gl_l.x, gl_l.y - sigma);
+  Vec_2<double> new_o = Vec_2<double>(0, sigma / 2);
+  ini_rand(p_arr, myran, n_par, new_l, new_o);
+
+  double Dt = 0.;
+  double k = 10;
+  double h = 0.05;
+  int n_step = 10000;
+
+  double r_cut = sigma;
+  Grid_2 grid(gl_l, r_cut);
+  //PeriodicDomain_2 pdm(gl_l);
+  Domain_w_hWalls<LJ_hWalls> pdm(gl_l, false, false, 0.1);
+  CellListNode_2<node_t> cl(pdm, grid);
+
+  // ini integrator
+  BrownianDynamicsEM integrator(h, Dt);
+
+  // cal force
+  SpringForce kernal(r_cut, k, sigma);
+  auto f1 = [&kernal](node_t* p1, node_t* p2) {
+    kernal(*p1, *p2);
+    };
+  auto f2 = [&kernal, &pdm](node_t* p1, node_t* p2) {
+    kernal(*p1, *p2, pdm);
+    };
+
+  cl.create(p_arr);
+  for (int t = 1; t <= n_step; t++) {
+    cl.for_each_pair(f1, f2);
+    for (int i = 0; i < n_par; i++) {
+      integrator.update(p_arr[i], pdm, myran);
+    }
+    cl.recreate(p_arr);
+  }
+}
+
 template <typename TPar, typename TSnap>
 void ini_from_snap(std::vector<TPar>& p_arr, TSnap& snap) {
   snap.read_last_frame(p_arr);
@@ -64,10 +109,14 @@ void ini_from_snap(std::vector<TPar>& p_arr, TSnap& snap) {
 
 template <typename TPar, typename TRan, typename TSnap>
 void ini(const std::string& ini_mode, std::vector<TPar>& p_arr, TRan& myran,
-  int n_par, const Vec_2<double>& gl_l, TSnap& snap,
-  double sigma = 1.) {
+         int n_par, const Vec_2<double>& gl_l, TSnap& snap,
+         double sigma = 1., bool flag_wall = false) {
   if (ini_mode == "rand") {
-    ini_rand_wo_overlap(p_arr, myran, n_par, gl_l, sigma);
+    if (flag_wall) {
+      ini_rand_w_hWalls(p_arr, myran, n_par, gl_l, sigma);
+    } else {
+      ini_rand_wo_overlap(p_arr, myran, n_par, gl_l, sigma);
+    }
   } else if (ini_mode == "resume") {
     ini_from_snap(p_arr, snap);
   } else {

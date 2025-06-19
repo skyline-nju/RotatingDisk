@@ -98,6 +98,9 @@ public:
   void tangle(Vec_2<double>& pos) const;
   void untangle(Vec_2<double>& v) const;
 
+  template <typename TPar>
+  void wall_force(TPar& p) const {}
+
   void set_PBC() {} //TODO reset flag_PBC_ when there are walls 
 protected:
   Vec_2<double> gl_half_l_;
@@ -137,3 +140,29 @@ inline void PeriodicDomain_2::untangle(Vec_2<double>& r12_vec) const {
     }
   }
 }
+
+
+template <typename TWall>
+class Domain_w_hWalls : public PeriodicDomain_2 {
+public:
+  Domain_w_hWalls(const Vec_2<double>& gl_l,
+                  bool flag_attractive_lower, bool flag_attractive_upper,
+                  double eps, double sigma = 1.0);
+
+
+  template <typename TPar>
+  void wall_force(TPar& p) const { wall_.interact(p); }
+
+private:
+  TWall wall_;
+};
+
+template<typename TWall>
+Domain_w_hWalls<TWall>::Domain_w_hWalls(const Vec_2<double>& gl_l,
+                                        bool flag_attractive_lower,
+                                        bool flag_attractive_upper,
+                                        double eps, double sigma)
+  : PeriodicDomain_2(gl_l, Vec_2<bool>(true, false)),
+    wall_(gl_l.y, flag_attractive_lower, flag_attractive_upper, eps, sigma){}
+
+
