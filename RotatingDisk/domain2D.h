@@ -153,6 +153,8 @@ public:
   template <typename TPar>
   void wall_force(TPar& p) const { wall_.interact(p); }
 
+  void tangle(Vec_2<double>& pos) const;
+
 private:
   TWall wall_;
 };
@@ -164,5 +166,32 @@ Domain_w_hWalls<TWall>::Domain_w_hWalls(const Vec_2<double>& gl_l,
                                         double eps, double sigma)
   : PeriodicDomain_2(gl_l, Vec_2<bool>(true, false)),
     wall_(gl_l.y, flag_attractive_lower, flag_attractive_upper, eps, sigma){}
+
+
+
+template <typename TWall>
+void Domain_w_hWalls<TWall>::tangle(Vec_2<double>& pos) const {
+  if (flag_PBC_.x) {
+    if (pos.x < 0.) {
+      pos.x += gl_l_.x;
+    } else if (pos.x >= gl_l_.x) {
+      pos.x -= gl_l_.x;
+    }
+  }
+  if (flag_PBC_.y) {
+    if (pos.y < 0.) {
+      pos.y += gl_l_.y;
+    } else if (pos.y >= gl_l_.y) {
+      pos.y -= gl_l_.y;
+    }
+  }
+
+#ifdef DEBUG_BDY
+  if (pos.y < 0 || pos.y >= gl_l_.y) {
+    std::cout << "Error, out of simulation box with y=" << pos.y << std::endl;
+    exit(1);
+  }
+#endif
+}
 
 

@@ -1,6 +1,8 @@
 #pragma once
 #include "vect.h"
 #include <cmath>
+#include "config.h"
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -137,12 +139,21 @@ private:
 template<typename TPar>
 void LJ_hWalls::interact(TPar& p) const {
   double dy0 = p.pos.y + half_sigma_;
-
+#ifdef DEBUG_BDY
+    if (dy0 < 0.) {
+      std::cout << "Error, y=" << p.pos.y << std::endl;
+    }
+#endif
   if (dy0 < r_cut_[0]) {
     double fy = get_LJ_force(dy0);
     p.force.y += fy;
   } else {
     double dy1 = Ly_ - p.pos.y + half_sigma_;
+#ifdef DEBUG_BDY
+    if (dy1 < 0.) {
+      std::cout << "Error, y=" << p.pos.y << std::endl;
+    }
+#endif
     if (dy1 < r_cut_[1]) {
       p.force.y -= get_LJ_force(dy1);
     }
